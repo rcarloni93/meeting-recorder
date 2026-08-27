@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meeting Recorder</title>
+  <link rel="icon" type="image/svg+xml" href="/mic.svg" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <header class="hdr">
+    <h1>Meeting Recorder</h1>
+    <p>Record → auto-transcribe with speaker labels → ready for Claude</p>
+  </header>
+
+  <!-- API Key -->
+  <div class="card">
+    <span class="card-label">AssemblyAI API Key — required for transcription</span>
+    <div class="key-row">
+      <input id="keyInput" class="key-input" type="password"
+             placeholder="your_assemblyai_api_key" autocomplete="off" />
+      <button class="icon-btn" id="keyToggle" title="Show / hide key">👁</button>
+    </div>
+    <span class="hint">
+      Free at <a href="https://www.assemblyai.com/" target="_blank" rel="noopener">assemblyai.com</a>
+      — 100 h / month · key is saved locally in your browser, never sent anywhere else
+    </span>
+  </div>
+
+  <!-- Sources -->
+  <div class="sources">
+    <div class="card">
+      <span class="card-label">Microphone</span>
+      <div class="status">
+        <span class="dot" id="micDot"></span>
+        <span id="micTxt">Not connected</span>
+      </div>
+      <button class="src-btn" id="micBtn">Connect microphone</button>
+    </div>
+
+    <div class="card">
+      <span class="card-label">PC Audio</span>
+      <div class="status">
+        <span class="dot" id="sysDot"></span>
+        <span id="sysTxt">Not connected</span>
+      </div>
+      <button class="src-btn" id="sysBtn">Connect PC audio</button>
+      <p class="note">
+        A share dialog will open — select <strong>Entire Screen</strong>,
+        tick <strong>Share system audio</strong>, then click Share.
+      </p>
+    </div>
+  </div>
+
+  <!-- Record button -->
+  <div class="rec-wrap">
+    <button class="rec-btn" id="recBtn" disabled>
+      <span class="rec-icon" id="recIcon">⏺</span>
+      <span class="rec-lbl"  id="recLbl">REC</span>
+    </button>
+  </div>
+
+  <!-- Recording UI: timer + waveform -->
+  <div id="recUI" hidden>
+    <div class="timer" id="timer">00:00:00</div>
+    <canvas id="waveCanvas" height="60"></canvas>
+  </div>
+
+  <!-- Result: WAV download -->
+  <div class="card" id="dlCard" hidden>
+    <div class="dl-row">
+      <div>
+        <div class="dl-name" id="dlName">meeting.wav</div>
+        <div class="dl-meta" id="dlMeta"></div>
+      </div>
+      <button class="dl-btn" id="dlBtn">↓ Download WAV</button>
+    </div>
+  </div>
+
+  <!-- Result: Transcript -->
+  <div class="card" id="txCard" hidden>
+    <span class="card-label">Transcript</span>
+
+    <!-- Progress -->
+    <div id="txProgress">
+      <div class="tx-status-row">
+        <div class="spinner" id="txSpinner"></div>
+        <span class="tx-status-txt" id="txStatusTxt">Uploading audio…</span>
+      </div>
+    </div>
+
+    <!-- Content (once transcription is done) -->
+    <div id="txContent" hidden>
+      <div class="tx-top">
+        <span class="tx-meta" id="txMeta"></span>
+        <div class="tx-actions">
+          <button class="sec-btn" id="copyBtn">Copy for Claude</button>
+          <button class="sec-btn" id="saveTxtBtn">↓ Save .txt</button>
+        </div>
+      </div>
+      <div class="tx-scroll" id="txScroll"></div>
+    </div>
+  </div>
+
+  <!-- New recording -->
+  <div class="new-wrap" id="newWrap" hidden>
+    <button class="new-btn" id="newBtn">New recording</button>
+  </div>
+
+  <footer class="footer">WAV · 16 kHz · mono · Chrome or Edge</footer>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
