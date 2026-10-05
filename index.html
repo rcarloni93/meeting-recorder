@@ -12,7 +12,7 @@
 
   <header>
     <span class="wordmark">meeting recorder</span>
-    <span class="wordmark-sub">record · transcribe · analyze</span>
+    <span class="wordmark-sub">record &middot; transcribe &middot; analyze</span>
   </header>
 
   <div class="rule"></div>
@@ -25,13 +25,13 @@
         id="keyInput"
         class="key-input"
         type="password"
-        placeholder="sk-••••••••••••••••••••••••"
+        placeholder="sk-&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
         autocomplete="off"
         spellcheck="false"
       />
       <button class="ghost-btn" id="keyToggle">show</button>
     </div>
-    <p class="field-hint">Free at <a href="https://www.assemblyai.com/" target="_blank" rel="noopener">assemblyai.com</a> — 100 h/month · key saved in your browser</p>
+    <p class="field-hint">Free at <a href="https://www.assemblyai.com/" target="_blank" rel="noopener">assemblyai.com</a> &mdash; 100&nbsp;h/month &middot; key saved in your browser</p>
   </section>
 
   <div class="rule"></div>
@@ -55,7 +55,7 @@
       </div>
       <button class="ghost-btn" id="sysBtn">connect</button>
     </div>
-    <p class="source-note">Select <strong>Entire Screen</strong> in the share dialog and enable <strong>Share system audio</strong></p>
+    <p class="source-note">For PC audio: in the share dialog select <strong>Entire Screen</strong> and enable <strong>Share system audio</strong></p>
   </section>
 
   <div class="rule"></div>
@@ -69,10 +69,10 @@
       <div class="timer" id="timer">00:00:00</div>
       <canvas id="waveCanvas" height="48"></canvas>
     </div>
-    <span class="rec-lbl" id="recLbl">record</span>
+    <span class="rec-lbl" id="recLbl">click to record</span>
   </section>
 
-  <!-- Download (shown after stop) -->
+  <!-- Download -->
   <div id="dlCard" hidden>
     <div class="rule"></div>
     <section class="section file-section">
@@ -111,8 +111,8 @@
   <!-- New recording -->
   <div id="newWrap" hidden>
     <div class="rule"></div>
-    <section class="section">
-      <button class="new-btn" id="newBtn">new recording</button>
+    <section class="section" style="text-align:center;padding-top:14px;padding-bottom:14px;">
+      <button class="new-btn" id="newBtn">start a new recording</button>
     </section>
   </div>
 

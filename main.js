@@ -22,18 +22,17 @@ let pollTimer  = null
 // ── DOM refs ───────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id)
 
-const micDot      = $('micDot')
-const micTxt      = $('micTxt')
-const micBtn      = $('micBtn')
-const sysDot      = $('sysDot')
-const sysTxt      = $('sysTxt')
-const sysBtn      = $('sysBtn')
-const recBtn      = $('recBtn')
-const recIcon     = $('recIcon')
-const recLbl      = $('recLbl')
-const timerEl     = $('timer')
-const canvas      = $('waveCanvas')
-const c2d         = canvas.getContext('2d')
+const micDot  = $('micDot')
+const micTxt  = $('micTxt')
+const micBtn  = $('micBtn')
+const sysDot  = $('sysDot')
+const sysTxt  = $('sysTxt')
+const sysBtn  = $('sysBtn')
+const recBtn  = $('recBtn')
+const recLbl  = $('recLbl')
+const timerEl = $('timer')
+const canvas  = $('waveCanvas')
+const c2d     = canvas.getContext('2d')
 
 // ── API key — persisted in localStorage ───────────────────────────────────
 const keyInput = $('keyInput')
@@ -41,7 +40,10 @@ keyInput.value = localStorage.getItem('aai_key') || ''
 keyInput.addEventListener('input', () => localStorage.setItem('aai_key', keyInput.value.trim()))
 
 $('keyToggle').addEventListener('click', () => {
-  keyInput.type = keyInput.type === 'password' ? 'text' : 'password'
+  const el = keyInput
+  const isHidden = el.type === 'password'
+  el.type = isHidden ? 'text' : 'password'
+  $('keyToggle').textContent = isHidden ? 'hide' : 'show'
 })
 
 const apiKey = () => keyInput.value.trim()
@@ -50,15 +52,15 @@ const apiKey = () => keyInput.value.trim()
 micBtn.addEventListener('click', async () => {
   try {
     micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-    const label = micStream.getAudioTracks()[0]?.label || 'Microphone'
+    const label = micStream.getAudioTracks()[0]?.label || 'microphone'
     micDot.className   = 'dot on'
-    micTxt.textContent = label.length > 28 ? label.slice(0, 28) + '…' : label
-    micBtn.textContent = '✓ Connected'
+    micTxt.textContent = label.length > 32 ? label.slice(0, 32) + '\u2026' : label
+    micBtn.textContent = 'connected'
     micBtn.disabled    = true
     checkReady()
   } catch {
     micDot.className   = 'dot err'
-    micTxt.textContent = 'Access denied'
+    micTxt.textContent = 'access denied'
   }
 })
 
@@ -68,7 +70,6 @@ sysBtn.addEventListener('click', async () => {
     try {
       sysStream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: false })
     } catch {
-      // Some browsers require a video track — request minimal video then stop it
       sysStream = await navigator.mediaDevices.getDisplayMedia({
         audio: true, video: { width: 1, height: 1, frameRate: 1 },
       })
@@ -80,29 +81,29 @@ sysBtn.addEventListener('click', async () => {
       sysStream.getTracks().forEach(t => t.stop())
       sysStream = null
       sysDot.className   = 'dot err'
-      sysTxt.textContent = 'No audio — check "Share system audio"'
+      sysTxt.textContent = 'no audio \u2014 check \u201cShare system audio\u201d'
       return
     }
 
     audioTracks[0].addEventListener('ended', () => {
       sysStream = null
       sysDot.className   = 'dot'
-      sysTxt.textContent = 'Disconnected'
-      sysBtn.textContent = 'Connect PC audio'
+      sysTxt.textContent = 'disconnected'
+      sysBtn.textContent = 'connect'
       sysBtn.disabled    = false
       checkReady()
     })
 
     sysDot.className   = 'dot on'
-    sysTxt.textContent = 'Connected'
-    sysBtn.textContent = '✓ Connected'
+    sysTxt.textContent = 'system audio'
+    sysBtn.textContent = 'connected'
     sysBtn.disabled    = true
     checkReady()
 
   } catch (e) {
     if (e.name !== 'NotAllowedError') {
       sysDot.className   = 'dot err'
-      sysTxt.textContent = 'Could not connect'
+      sysTxt.textContent = 'could not connect'
     }
   }
 })
@@ -120,8 +121,7 @@ function startRec() {
   wavBuf = null; chunks = []; totalSamples = 0; utterances = []; isRec = true
 
   recBtn.classList.add('recording')
-  recIcon.textContent = '⏹'
-  recLbl.textContent  = 'STOP'
+  recLbl.hidden = true   // timer takes over as status
   show('recUI')
   hide('dlCard'); hide('txCard'); hide('newWrap')
   timerEl.textContent = '00:00:00'
@@ -183,18 +183,18 @@ function stopRec() {
   const date = new Date().toISOString().slice(0, 10)
 
   recBtn.classList.remove('recording')
-  recIcon.textContent = '⏺'
-  recLbl.textContent  = 'REC'
+  recLbl.hidden       = false
+  recLbl.textContent  = 'click to record'
   hide('recUI')
   show('dlCard'); show('newWrap')
   $('dlName').textContent = `meeting-${date}.wav`
-  $('dlMeta').textContent = `${fmtSec(dur)} · ${mb} MB · 16 kHz mono`
+  $('dlMeta').textContent = `${fmtSec(dur)} \u00b7 ${mb}\u00a0MB \u00b7 16\u00a0kHz mono`
 
   // Auto-start transcription if key is set
   if (apiKey()) {
     show('txCard')
     show('txProgress'); hide('txContent')
-    setTxStatus('Uploading audio…')
+    setTxStatus('Uploading audio\u2026')
     startTranscription()
   }
 }
@@ -212,18 +212,18 @@ function fmtSec(s) {
 // ── Waveform ───────────────────────────────────────────────────────────────
 function drawWave() {
   if (!isRec || !analyser) return
-  const W = canvas.clientWidth || 640
+  const W = canvas.clientWidth || 460
   if (canvas.width !== W) canvas.width = W
   const H = canvas.height
   const data = new Uint8Array(analyser.frequencyBinCount)
   analyser.getByteTimeDomainData(data)
   c2d.clearRect(0, 0, W, H)
-  c2d.strokeStyle = '#2563eb'
+  c2d.strokeStyle = '#e5293e'
   c2d.lineWidth   = 1.5
   c2d.beginPath()
   const step = W / data.length
   for (let i = 0; i < data.length; i++) {
-    const y = (data[i] / 128 - 1) * (H / 2.2) + H / 2
+    const y = (data[i] / 128 - 1) * (H / 2.4) + H / 2
     i === 0 ? c2d.moveTo(0, y) : c2d.lineTo(i * step, y)
   }
   c2d.stroke()
@@ -238,13 +238,13 @@ function encodeWAV() {
 
   ws(0, 'RIFF'); view.setUint32(4, 36 + totalSamples * 2, true)
   ws(8, 'WAVE'); ws(12, 'fmt ')
-  view.setUint32(16, 16, true)      // chunk size
-  view.setUint16(20, 1,  true)      // PCM
-  view.setUint16(22, 1,  true)      // mono
-  view.setUint32(24, SR, true)      // sample rate
-  view.setUint32(28, SR * 2, true)  // byte rate
-  view.setUint16(32, 2,  true)      // block align
-  view.setUint16(34, 16, true)      // 16-bit
+  view.setUint32(16, 16, true)
+  view.setUint16(20, 1,  true)
+  view.setUint16(22, 1,  true)
+  view.setUint32(24, SR, true)
+  view.setUint32(28, SR * 2, true)
+  view.setUint16(32, 2,  true)
+  view.setUint16(34, 16, true)
   ws(36, 'data'); view.setUint32(40, totalSamples * 2, true)
 
   let off = 44
@@ -273,7 +273,6 @@ $('dlBtn').addEventListener('click', async () => {
     } catch (e) { if (e.name === 'AbortError') return }
   }
 
-  // Fallback
   const url = URL.createObjectURL(blob)
   const a   = Object.assign(document.createElement('a'), { href: url, download: filename })
   a.style.display = 'none'
@@ -302,19 +301,19 @@ async function aaiGet(path) {
 // ── Transcription flow ─────────────────────────────────────────────────────
 async function startTranscription() {
   try {
-    setTxStatus('Uploading audio…')
+    setTxStatus('Uploading audio\u2026')
     const blob = new Blob([wavBuf], { type: 'audio/wav' })
     const { upload_url } = await aaiPost('/v2/upload', blob, true)
 
-    setTxStatus('Queuing transcription…')
+    setTxStatus('Queuing transcription\u2026')
     const { id } = await aaiPost('/v2/transcript', { audio_url: upload_url, speaker_labels: true })
 
-    setTxStatus('Transcribing… (1–3 min depending on length)')
+    setTxStatus('Transcribing\u2026 (1\u20133 min depending on length)')
     pollTimer = setInterval(async () => {
       try {
         const data = await aaiGet(`/v2/transcript/${id}`)
         if (data.status === 'completed') { clearInterval(pollTimer); renderTranscript(data) }
-        else if (data.status === 'error') { clearInterval(pollTimer); setTxStatus('AssemblyAI error: ' + data.error, 'err') }
+        else if (data.status === 'error') { clearInterval(pollTimer); setTxStatus('Error: ' + data.error, 'err') }
       } catch (e) { clearInterval(pollTimer); setTxStatus(e.message, 'err') }
     }, 3_000)
   } catch (e) {
@@ -341,7 +340,7 @@ function renderTranscript(data) {
   utterances = data.utterances || []
   const spks = [...new Set(utterances.map(u => u.speaker))].length
   const dur  = utterances.length ? fmtMs(utterances[utterances.length - 1].end) : '?'
-  $('txMeta').textContent = `${utterances.length} segments · ${spks} speaker${spks !== 1 ? 's' : ''} · ${dur}`
+  $('txMeta').textContent = `${utterances.length} segments \u00b7 ${spks} speaker${spks !== 1 ? 's' : ''} \u00b7 ${dur}`
 
   const scroll = $('txScroll')
   scroll.innerHTML = ''
@@ -349,7 +348,7 @@ function renderTranscript(data) {
     const c   = colorOf(u.speaker)
     const row = document.createElement('div'); row.className = 'tx-line'
     const b   = document.createElement('span'); b.className = 'spk-badge'
-    b.style.cssText = `background:${c}20;color:${c};border-color:${c}55`
+    b.style.cssText = `background:${c}18;color:${c};border-color:${c}44`
     b.textContent   = `Spk ${u.speaker}`
     const t   = document.createElement('span'); t.className = 'tx-time'; t.textContent = fmtMs(u.start)
     const tx  = document.createElement('span'); tx.className = 'tx-text'; tx.textContent = u.text
@@ -377,8 +376,8 @@ function toText() {
 
 $('copyBtn').addEventListener('click', () => {
   navigator.clipboard.writeText(toText()).then(() => {
-    $('copyBtn').textContent = 'Copied!'
-    setTimeout(() => { $('copyBtn').textContent = 'Copy for Claude' }, 2_000)
+    $('copyBtn').textContent = 'copied!'
+    setTimeout(() => { $('copyBtn').textContent = 'copy for claude' }, 2_000)
   })
 })
 
@@ -396,6 +395,8 @@ $('newBtn').addEventListener('click', () => {
   if (pollTimer) clearInterval(pollTimer)
   wavBuf = null; chunks = []; totalSamples = 0; utterances = []
   hide('dlCard'); hide('txCard'); hide('newWrap'); hide('recUI')
+  recLbl.hidden = false
+  recLbl.textContent = 'click to record'
   timerEl.textContent = '00:00:00'
   checkReady()
 })
