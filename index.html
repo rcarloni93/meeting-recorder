@@ -10,109 +10,113 @@
 <body>
 <div class="app">
 
-  <!-- Header -->
-  <header class="hdr">
-    <h1>Meeting Recorder</h1>
-    <p>Record → auto-transcribe with speaker labels → ready for Claude</p>
+  <header>
+    <span class="wordmark">meeting recorder</span>
+    <span class="wordmark-sub">record · transcribe · analyze</span>
   </header>
 
-  <!-- API Key -->
-  <div class="card">
-    <span class="card-label">AssemblyAI API Key — required for transcription</span>
+  <div class="rule"></div>
+
+  <!-- API key -->
+  <section class="section">
+    <label class="field-label" for="keyInput">assemblyai api key</label>
     <div class="key-row">
-      <input id="keyInput" class="key-input" type="password"
-             placeholder="your_assemblyai_api_key" autocomplete="off" />
-      <button class="icon-btn" id="keyToggle" title="Show / hide key">👁</button>
+      <input
+        id="keyInput"
+        class="key-input"
+        type="password"
+        placeholder="sk-••••••••••••••••••••••••"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="ghost-btn" id="keyToggle">show</button>
     </div>
-    <span class="hint">
-      Free at <a href="https://www.assemblyai.com/" target="_blank" rel="noopener">assemblyai.com</a>
-      — 100 h / month · key is saved locally in your browser, never sent anywhere else
-    </span>
-  </div>
+    <p class="field-hint">Free at <a href="https://www.assemblyai.com/" target="_blank" rel="noopener">assemblyai.com</a> — 100 h/month · key saved in your browser</p>
+  </section>
+
+  <div class="rule"></div>
 
   <!-- Sources -->
-  <div class="sources">
-    <div class="card">
-      <span class="card-label">Microphone</span>
-      <div class="status">
-        <span class="dot" id="micDot"></span>
-        <span id="micTxt">Not connected</span>
+  <section class="section sources-section">
+    <div class="source">
+      <span class="dot" id="micDot"></span>
+      <div class="source-info">
+        <span class="source-label">microphone</span>
+        <span class="source-name" id="micTxt">not connected</span>
       </div>
-      <button class="src-btn" id="micBtn">Connect microphone</button>
+      <button class="ghost-btn" id="micBtn">connect</button>
     </div>
-
-    <div class="card">
-      <span class="card-label">PC Audio</span>
-      <div class="status">
-        <span class="dot" id="sysDot"></span>
-        <span id="sysTxt">Not connected</span>
+    <div class="source-sep"></div>
+    <div class="source">
+      <span class="dot" id="sysDot"></span>
+      <div class="source-info">
+        <span class="source-label">pc audio</span>
+        <span class="source-name" id="sysTxt">not connected</span>
       </div>
-      <button class="src-btn" id="sysBtn">Connect PC audio</button>
-      <p class="note">
-        A share dialog will open — select <strong>Entire Screen</strong>,
-        tick <strong>Share system audio</strong>, then click Share.
-      </p>
+      <button class="ghost-btn" id="sysBtn">connect</button>
     </div>
-  </div>
+    <p class="source-note">Select <strong>Entire Screen</strong> in the share dialog and enable <strong>Share system audio</strong></p>
+  </section>
 
-  <!-- Record button -->
-  <div class="rec-wrap">
+  <div class="rule"></div>
+
+  <!-- Stage: record button + timer + waveform -->
+  <section class="stage">
     <button class="rec-btn" id="recBtn" disabled>
-      <span class="rec-icon" id="recIcon">⏺</span>
-      <span class="rec-lbl"  id="recLbl">REC</span>
+      <span class="rec-icon" id="recIcon"></span>
     </button>
-  </div>
-
-  <!-- Recording UI: timer + waveform -->
-  <div id="recUI" hidden>
-    <div class="timer" id="timer">00:00:00</div>
-    <canvas id="waveCanvas" height="60"></canvas>
-  </div>
-
-  <!-- Result: WAV download -->
-  <div class="card" id="dlCard" hidden>
-    <div class="dl-row">
-      <div>
-        <div class="dl-name" id="dlName">meeting.wav</div>
-        <div class="dl-meta" id="dlMeta"></div>
-      </div>
-      <button class="dl-btn" id="dlBtn">↓ Download WAV</button>
+    <div class="stage-live" id="recUI" hidden>
+      <div class="timer" id="timer">00:00:00</div>
+      <canvas id="waveCanvas" height="48"></canvas>
     </div>
-  </div>
+    <span class="rec-lbl" id="recLbl">record</span>
+  </section>
 
-  <!-- Result: Transcript -->
-  <div class="card" id="txCard" hidden>
-    <span class="card-label">Transcript</span>
-
-    <!-- Progress -->
-    <div id="txProgress">
-      <div class="tx-status-row">
-        <div class="spinner" id="txSpinner"></div>
-        <span class="tx-status-txt" id="txStatusTxt">Uploading audio…</span>
-      </div>
-    </div>
-
-    <!-- Content (once transcription is done) -->
-    <div id="txContent" hidden>
-      <div class="tx-top">
-        <span class="tx-meta" id="txMeta"></span>
-        <div class="tx-actions">
-          <button class="sec-btn" id="copyBtn">Copy for Claude</button>
-          <button class="sec-btn" id="saveTxtBtn">↓ Save .txt</button>
+  <!-- Download (shown after stop) -->
+  <div id="dlCard" hidden>
+    <div class="rule"></div>
+    <section class="section file-section">
+      <div class="file-row">
+        <div class="file-info">
+          <span class="file-name" id="dlName">meeting.wav</span>
+          <span class="file-meta" id="dlMeta"></span>
         </div>
+        <button class="outline-btn" id="dlBtn">download</button>
       </div>
-      <div class="tx-scroll" id="txScroll"></div>
-    </div>
+    </section>
+  </div>
+
+  <!-- Transcript -->
+  <div id="txCard" hidden>
+    <div class="rule"></div>
+    <section class="section tx-section">
+      <div class="tx-progress" id="txProgress">
+        <span class="pulse-dot" id="txSpinner"></span>
+        <span class="tx-status-txt" id="txStatusTxt"></span>
+      </div>
+      <div id="txContent" hidden>
+        <div class="tx-top">
+          <span class="tx-meta" id="txMeta"></span>
+          <div class="tx-actions">
+            <button class="solid-btn" id="copyBtn">copy for claude</button>
+            <button class="ghost-btn" id="saveTxtBtn">save .txt</button>
+          </div>
+        </div>
+        <div class="tx-rule"></div>
+        <div class="tx-feed" id="txScroll"></div>
+      </div>
+    </section>
   </div>
 
   <!-- New recording -->
-  <div class="new-wrap" id="newWrap" hidden>
-    <button class="new-btn" id="newBtn">New recording</button>
+  <div id="newWrap" hidden>
+    <div class="rule"></div>
+    <section class="section">
+      <button class="new-btn" id="newBtn">new recording</button>
+    </section>
   </div>
 
-  <footer class="footer">WAV · 16 kHz · mono · Chrome or Edge</footer>
 </div>
-
 <script type="module" src="./main.js"></script>
 </body>
 </html>
